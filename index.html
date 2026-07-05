@@ -168,14 +168,14 @@
       color: rgba(255, 255, 255, 0.25);
     }
 
-    /* Style selector */
-    .style-selector {
+    /* Language selector */
+    .language-selector {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.75rem;
     }
 
-    .style-option {
+    .language-option {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--card-border);
       border-radius: 14px;
@@ -189,34 +189,24 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.35rem;
     }
 
-    .style-option:hover {
+    .language-option:hover {
       background: rgba(255, 255, 255, 0.06);
       color: var(--text-main);
       transform: translateY(-2px);
     }
 
-    .style-option.active {
+    .language-option.active {
       background: rgba(168, 85, 247, 0.1);
       border-color: #a855f7;
       color: #e9d5ff;
       box-shadow: 0 0 15px rgba(168, 85, 247, 0.1);
     }
 
-    .style-option span.icon {
-      font-size: 1.3rem;
-    }
-
-    .style-option span.title {
-      font-size: 0.9rem;
-    }
-
-    .style-option span.desc {
-      font-size: 0.75rem;
-      font-weight: 400;
-      opacity: 0.6;
+    .language-option span.icon {
+      font-size: 1.5rem;
     }
 
     /* Action button */
@@ -374,8 +364,8 @@
       header h1 {
         font-size: 2.2rem;
       }
-      .style-selector {
-        grid-template-columns: 1fr;
+      .language-selector {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -385,7 +375,7 @@
   <div class="container">
     <header>
       <h1>✨ Meeting Summarizer</h1>
-      <p>貼上逐字稿，立即生成結構化的會議精華與待辦清單</p>
+      <p>貼上會議逐字稿，立即生成結構化的會議紀錄與行動方案</p>
     </header>
 
     <div class="card">
@@ -397,28 +387,29 @@
       </div>
 
       <div class="form-group">
-        <label><span>🎯</span> 摘要樣式</label>
-        <div class="style-selector">
-          <div class="style-option active" data-style="summary">
-            <span class="icon">⚡</span>
-            <span class="title">精簡結論</span>
-            <span class="desc">快速了解核心結論</span>
+        <label><span>🌐</span> 輸出語言 (Output Language)</label>
+        <div class="language-selector">
+          <div class="language-option active" data-lang="zh-TW">
+            <span class="icon">🇹🇼</span>
+            <span class="title">繁體中文</span>
           </div>
-          <div class="style-option" data-style="detail">
-            <span class="icon">📋</span>
-            <span class="title">詳細會議紀錄</span>
-            <span class="desc">紀錄背景、細節與決議</span>
+          <div class="language-option" data-lang="zh-CN">
+            <span class="icon">🇨🇳</span>
+            <span class="title">简体中文</span>
           </div>
-          <div class="style-option" data-style="action">
-            <span class="icon">✅</span>
-            <span class="title">待辦行動清單</span>
-            <span class="desc">抓出所有交辦事項</span>
+          <div class="language-option" data-lang="en">
+            <span class="icon">🇺🇸</span>
+            <span class="title">English</span>
+          </div>
+          <div class="language-option" data-lang="ja">
+            <span class="icon">🇯🇵</span>
+            <span class="title">日本語</span>
           </div>
         </div>
       </div>
 
       <button id="btn-submit" class="btn-submit">
-        <span>🚀</span> <span id="btn-text">生成摘要</span>
+        <span>🚀</span> <span id="btn-text">生成結構化會議記錄</span>
         <div id="spinner" class="spinner"></div>
       </button>
     </div>
@@ -441,15 +432,15 @@
     // Google Apps Script Web App 網址
     const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyVwjsSKaNtypllpNw6lHhvTcUH4Wzu2-l3rFD8IdnoqKlGo5O-El873BLN-Ybwsq_puA/exec";
 
-    let selectedStyle = 'summary';
+    let selectedLanguage = 'zh-TW';
     let rawSummaryMarkdown = "";
 
-    // 選擇摘要風格樣式
-    document.querySelectorAll('.style-option').forEach(option => {
+    // 選擇語言
+    document.querySelectorAll('.language-option').forEach(option => {
       option.addEventListener('click', () => {
-        document.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('active'));
+        document.querySelectorAll('.language-option').forEach(opt => opt.classList.remove('active'));
         option.classList.add('active');
-        selectedStyle = option.getAttribute('data-style');
+        selectedLanguage = option.getAttribute('data-lang');
       });
     });
 
@@ -484,7 +475,7 @@
           },
           body: JSON.stringify({
             transcript: transcript,
-            style: selectedStyle
+            language: selectedLanguage
           })
         });
 
@@ -509,7 +500,7 @@
       } finally {
         // 還原按鈕狀態
         btnSubmit.disabled = false;
-        btnText.textContent = '生成摘要';
+        btnText.textContent = '生成結構化會議記錄';
         spinner.style.display = 'none';
       }
     });
@@ -534,6 +525,6 @@
         alert('無法複製到剪貼簿');
       });
     });
-  </style>
+  </script>
 </body>
 </html>
