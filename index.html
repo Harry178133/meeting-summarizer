@@ -75,7 +75,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1200px; /* 增加寬度以支援左右佈局 */
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -86,7 +86,7 @@
     /* Header styling */
     header {
       text-align: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
 
     header h1 {
@@ -109,6 +109,15 @@
       font-weight: 300;
     }
 
+    /* 左右欄位佈局 */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+      width: 100%;
+      align-items: start;
+    }
+
     /* Card styling (Glassmorphism) */
     .card {
       background: var(--card-bg);
@@ -127,6 +136,130 @@
     .card:focus-within {
       border-color: rgba(99, 102, 241, 0.4);
       box-shadow: 0 20px 40px rgba(99, 102, 241, 0.05);
+    }
+
+    /* 歷史紀錄卡片 */
+    .history-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 700px;
+      overflow-y: auto;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+
+    .history-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #a855f7;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-clear-all {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: color 0.25s ease;
+    }
+
+    .btn-clear-all:hover {
+      color: #f87171;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(168, 85, 247, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .history-item.active {
+      background: rgba(168, 85, 247, 0.08);
+      border-color: #a855f7;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.05);
+    }
+
+    .history-item-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      width: calc(100% - 28px);
+    }
+
+    .history-item-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .history-item-snippet {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-delete-history {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-history:hover {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    .empty-history {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 2rem 0;
+      font-style: italic;
     }
 
     /* Input area */
@@ -152,6 +285,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 1.2rem;
+      padding-bottom: 2.2rem; /* 留出空間給字數指示器 */
       color: var(--text-main);
       font-family: inherit;
       font-size: 1rem;
@@ -372,8 +506,29 @@
       font-style: italic;
     }
 
+    /* Scrollbar Styling for History */
+    .history-card::-webkit-scrollbar {
+      width: 6px;
+    }
+    .history-card::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .history-card::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    .history-card::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     /* Responsive */
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+      .history-card {
+        max-height: 300px;
+      }
       .card {
         padding: 1.5rem;
       }
@@ -405,64 +560,86 @@
       <p>貼上會議逐字稿，立即生成結構化的會議紀錄與行動方案</p>
     </header>
 
-    <div class="card">
-      <div class="form-group">
-        <label for="transcript">
-          <span>📝</span> 會議逐字稿
-        </label>
-        <textarea id="transcript" placeholder="在此貼上您的會議錄音逐字稿（支援長文本）..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label><span>🌐</span> 輸出語言 (Output Language)</label>
-        <div class="language-selector">
-          <div class="language-option active" data-lang="zh-TW">
-            <span class="icon">🇹🇼</span>
-            <span class="title">繁體中文</span>
+    <div class="app-layout">
+      <!-- Left side: History Logs Panel -->
+      <div class="history-card">
+        <div class="history-header">
+          <div class="history-title">
+            <span>📜</span> 歷史紀錄
           </div>
-          <div class="language-option" data-lang="zh-CN">
-            <span class="icon">🇨🇳</span>
-            <span class="title">简体中文</span>
-          </div>
-          <div class="language-option" data-lang="en">
-            <span class="icon">🇺🇸</span>
-            <span class="title">English</span>
-          </div>
-          <div class="language-option" data-lang="ja">
-            <span class="icon">🇯🇵</span>
-            <span class="title">日本語</span>
-          </div>
+          <button id="btn-clear-all" class="btn-clear-all">清除全部</button>
+        </div>
+        <div id="history-list" class="history-list">
+          <div class="empty-history">載入中...</div>
         </div>
       </div>
 
-      <button id="btn-submit" class="btn-submit">
-        <span>🚀</span> <span id="btn-text">生成結構化會議記錄</span>
-        <div id="spinner" class="spinner"></div>
-      </button>
-    </div>
+      <!-- Right side: Input and Output Panels -->
+      <div style="display: flex; flex-direction: column; gap: 2rem; width: 100%;">
+        <div class="card">
+          <div class="form-group" style="position: relative;">
+            <label for="transcript">
+              <span>📝</span> 會議逐字稿
+            </label>
+            <div style="position: relative; width: 100%;">
+              <textarea id="transcript" placeholder="在此貼上您的會議錄音逐字稿（支援長文本）..."></textarea>
+              <div id="char-counter" style="position: absolute; bottom: 12px; right: 12px; font-size: 0.8rem; color: var(--text-muted); background: rgba(0, 0, 0, 0.6); padding: 3px 8px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid var(--card-border);">0 / 17,000 字</div>
+            </div>
+            <div id="warning-banner" style="display: none; color: #f87171; font-size: 0.85rem; font-weight: 600; margin-top: -0.25rem; animation: fadeIn 0.3s ease;">⚠️ 逐字稿字數已超過 17,000 字，可能影響生成品質或超出 AI 處理上限！</div>
+          </div>
 
-    <!-- Output Area -->
-    <div id="output-card" class="card output-card">
-      <div class="output-header">
-        <div class="output-title">
-          <span>🧠</span> AI 摘要結果
+          <div class="form-group">
+            <label><span>🌐</span> 輸出語言 (Output Language)</label>
+            <div class="language-selector">
+              <div class="language-option active" data-lang="zh-TW">
+                <span class="icon">🇹🇼</span>
+                <span class="title">繁體中文</span>
+              </div>
+              <div class="language-option" data-lang="zh-CN">
+                <span class="icon">🇨🇳</span>
+                <span class="title">简体中文</span>
+              </div>
+              <div class="language-option" data-lang="en">
+                <span class="icon">🇺🇸</span>
+                <span class="title">English</span>
+              </div>
+              <div class="language-option" data-lang="ja">
+                <span class="icon">🇯🇵</span>
+                <span class="title">日本語</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-submit" class="btn-submit">
+            <span>🚀</span> <span id="btn-text">生成結構化會議記錄</span>
+            <div id="spinner" class="spinner"></div>
+          </button>
         </div>
-        <div class="action-group">
-          <button id="btn-copy" class="btn-action">
-            <span id="copy-icon">📋</span> <span id="copy-text">複製</span>
-          </button>
-          <button id="btn-dl-md" class="btn-action" style="border-color: rgba(99, 102, 241, 0.4); color: #c084fc;">
-            <span>📄</span> <span>Markdown</span>
-          </button>
-          <button id="btn-dl-word" class="btn-action" style="border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
-            <span>📘</span> <span>Word</span>
-          </button>
-          <button id="btn-dl-pdf" class="btn-action" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
-            <span>📕</span> <span>PDF</span>
-          </button>
+
+        <!-- Output Area -->
+        <div id="output-card" class="card output-card">
+          <div class="output-header">
+            <div class="output-title">
+              <span>🧠</span> AI 摘要結果
+            </div>
+            <div class="action-group">
+              <button id="btn-copy" class="btn-action">
+                <span id="copy-icon">📋</span> <span id="copy-text">複製</span>
+              </button>
+              <button id="btn-dl-md" class="btn-action" style="border-color: rgba(99, 102, 241, 0.4); color: #c084fc;">
+                <span>📄</span> <span>Markdown</span>
+              </button>
+              <button id="btn-dl-word" class="btn-action" style="border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
+                <span>📘</span> <span>Word</span>
+              </button>
+              <button id="btn-dl-pdf" class="btn-action" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+                <span>📕</span> <span>PDF</span>
+              </button>
+            </div>
+          </div>
+          <div id="markdown-result" class="markdown-content"></div>
         </div>
       </div>
-      <div id="markdown-result" class="markdown-content"></div>
     </div>
   </div>
 
@@ -472,6 +649,13 @@
 
     let selectedLanguage = 'zh-TW';
     let rawSummaryMarkdown = "";
+    let historyRecords = [];
+
+    // 初始化頁面
+    window.addEventListener('DOMContentLoaded', () => {
+      loadHistoryFromStorage();
+      updateCharCount();
+    });
 
     // 選擇語言
     document.querySelectorAll('.language-option').forEach(option => {
@@ -489,6 +673,30 @@
     const outputCard = document.getElementById('output-card');
     const markdownResult = document.getElementById('markdown-result');
     const btnCopy = document.getElementById('btn-copy');
+    const charCounter = document.getElementById('char-counter');
+    const warningBanner = document.getElementById('warning-banner');
+
+    // 即時字數統計與警告監聽
+    function updateCharCount() {
+      const count = transcriptInput.value.length;
+      charCounter.textContent = `${count.toLocaleString()} / 17,000 字`;
+      
+      if (count > 17000) {
+        charCounter.style.color = '#f87171'; // 紅色
+        charCounter.style.borderColor = 'rgba(248, 113, 113, 0.4)';
+        warningBanner.style.display = 'block';
+      } else {
+        charCounter.style.color = 'var(--text-muted)';
+        charCounter.style.borderColor = 'var(--card-border)';
+        warningBanner.style.display = 'none';
+      }
+    }
+
+    transcriptInput.addEventListener('input', updateCharCount);
+    transcriptInput.addEventListener('paste', () => {
+      // 稍微延遲讓貼上內容完全載入後再進行統計
+      setTimeout(updateCharCount, 50);
+    });
 
     // 點擊提交按鈕
     btnSubmit.addEventListener('click', async () => {
@@ -496,6 +704,12 @@
       if (!transcript) {
         alert('請先輸入或貼上逐字稿內容！');
         return;
+      }
+
+      // 如果超過 17000 字，跳出提示警告確認
+      if (transcript.length > 17000) {
+        const proceed = confirm('⚠️ 您的字數已超過 17,000 字限制，這可能會超出 API 單次處理上限或導致內容被截斷。是否仍要繼續發送？');
+        if (!proceed) return;
       }
 
       // 載入狀態
@@ -529,6 +743,9 @@
           outputCard.style.display = 'block';
           // 滾動到結果區域
           outputCard.scrollIntoView({ behavior: 'smooth' });
+
+          // 成功後，儲存至歷史紀錄中
+          addHistoryRecord(transcript, rawSummaryMarkdown, selectedLanguage);
         } else {
           alert('未知的伺服器回應');
         }
@@ -649,6 +866,161 @@
       
       // 呼叫 html2pdf 進行列印並下載
       html2pdf().from(optElement).set(opt).save();
+    });
+
+    // ==========================================
+    // 歷史紀錄處理邏輯 (localStorage)
+    // ==========================================
+
+    // 載入歷史紀錄
+    function loadHistoryFromStorage() {
+      const stored = localStorage.getItem('meeting_summary_history');
+      if (stored) {
+        try {
+          historyRecords = JSON.parse(stored);
+        } catch (e) {
+          historyRecords = [];
+        }
+      }
+      renderHistoryList();
+    }
+
+    // 儲存歷史紀錄並重新渲染
+    function saveHistoryToStorage() {
+      localStorage.setItem('meeting_summary_history', JSON.stringify(historyRecords));
+      renderHistoryList();
+    }
+
+    // 新增歷史紀錄
+    function addHistoryRecord(transcript, summary, language) {
+      const newRecord = {
+        id: Date.now(),
+        timeString: formatDateTime(new Date()),
+        titleSnippet: transcript.substring(0, 25).replace(/\n/g, ' ') + (transcript.length > 25 ? '...' : ''),
+        transcript: transcript,
+        summary: summary,
+        language: language
+      };
+
+      // 避免儲存完全重複的內容，移除同內容之舊紀錄
+      historyRecords = historyRecords.filter(r => !(r.transcript === transcript && r.language === language));
+
+      // 插入到數組開頭
+      historyRecords.unshift(newRecord);
+
+      // 限制最多 10 筆
+      if (historyRecords.length > 10) {
+        historyRecords.pop();
+      }
+
+      saveHistoryToStorage();
+    }
+
+    // 格式化日期為 YYYY/MM/DD HH:MM
+    function formatDateTime(date) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    // 渲染歷史列表 UI
+    function renderHistoryList() {
+      const listEl = document.getElementById('history-list');
+      listEl.innerHTML = '';
+
+      if (historyRecords.length === 0) {
+        listEl.innerHTML = '<div class="empty-history">尚無歷史紀錄</div>';
+        return;
+      }
+
+      historyRecords.forEach(record => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.dataset.id = record.id;
+        
+        // 點擊歷史條目進行加載
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.btn-delete-history')) return; // 點擊刪除不觸發加載
+          loadRecord(record);
+        });
+
+        const content = document.createElement('div');
+        content.className = 'history-item-content';
+
+        const time = document.createElement('div');
+        time.className = 'history-item-time';
+        
+        let langLabel = '繁中';
+        if (record.language === 'zh-CN') langLabel = '简中';
+        if (record.language === 'en') langLabel = 'EN';
+        if (record.language === 'ja') langLabel = 'JA';
+        
+        time.textContent = `${record.timeString} [${langLabel}]`;
+
+        const snippet = document.createElement('div');
+        snippet.className = 'history-item-snippet';
+        snippet.textContent = record.titleSnippet;
+
+        content.appendChild(time);
+        content.appendChild(snippet);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete-history';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = '刪除此紀錄';
+        deleteBtn.addEventListener('click', () => {
+          deleteRecord(record.id);
+        });
+
+        item.appendChild(content);
+        item.appendChild(deleteBtn);
+        listEl.appendChild(item);
+      });
+    }
+
+    // 加載選定的歷史紀錄到畫面上
+    function loadRecord(record) {
+      transcriptInput.value = record.transcript;
+      updateCharCount();
+
+      selectedLanguage = record.language;
+      document.querySelectorAll('.language-option').forEach(opt => {
+        if (opt.getAttribute('data-lang') === selectedLanguage) {
+          opt.classList.add('active');
+        } else {
+          opt.classList.remove('active');
+        }
+      });
+
+      rawSummaryMarkdown = record.summary;
+      markdownResult.innerHTML = marked.parse(rawSummaryMarkdown);
+      outputCard.style.display = 'block';
+      outputCard.scrollIntoView({ behavior: 'smooth' });
+
+      // 將目前被點選的項目加上 active 標記
+      document.querySelectorAll('.history-item').forEach(item => {
+        if (Number(item.dataset.id) === record.id) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // 刪除歷史紀錄
+    function deleteRecord(id) {
+      historyRecords = historyRecords.filter(r => r.id !== id);
+      saveHistoryToStorage();
+    }
+
+    // 清除所有歷史紀錄
+    document.getElementById('btn-clear-all').addEventListener('click', () => {
+      if (confirm('確定要清除所有歷史紀錄嗎？')) {
+        historyRecords = [];
+        saveHistoryToStorage();
+        outputCard.style.display = 'none';
+        transcriptInput.value = '';
+        updateCharCount();
+      }
     });
   </script>
 </body>
