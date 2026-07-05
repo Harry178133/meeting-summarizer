@@ -584,9 +584,9 @@
             </label>
             <div style="position: relative; width: 100%;">
               <textarea id="transcript" placeholder="在此貼上您的會議錄音逐字稿（支援長文本）..."></textarea>
-              <div id="char-counter" style="position: absolute; bottom: 12px; right: 12px; font-size: 0.8rem; color: var(--text-muted); background: rgba(0, 0, 0, 0.6); padding: 3px 8px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid var(--card-border);">0 / 17,000 字</div>
+              <div id="char-counter" style="position: absolute; bottom: 12px; right: 12px; font-size: 0.8rem; color: var(--text-muted); background: rgba(0, 0, 0, 0.6); padding: 3px 8px; border-radius: 6px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid var(--card-border);">0 / 20,000 字</div>
             </div>
-            <div id="warning-banner" style="display: none; color: #f87171; font-size: 0.85rem; font-weight: 600; margin-top: -0.25rem; animation: fadeIn 0.3s ease;">⚠️ 逐字稿字數已超過 17,000 字，可能影響生成品質或超出 AI 處理上限！</div>
+            <div id="warning-banner" style="display: none; color: #f87171; font-size: 0.85rem; font-weight: 600; margin-top: -0.25rem; animation: fadeIn 0.3s ease;">⚠️ 逐字稿字數已超過 20,000 字，可能影響生成品質或超出 AI 處理上限！</div>
           </div>
 
           <div class="form-group">
@@ -680,9 +680,9 @@
     // 即時字數統計與警告監聽
     function updateCharCount() {
       const count = transcriptInput.value.length;
-      charCounter.textContent = `${count.toLocaleString()} / 17,000 字`;
+      charCounter.textContent = `${count.toLocaleString()} / 20,000 字`;
       
-      if (count > 17000) {
+      if (count > 20000) {
         charCounter.style.color = '#f87171'; // 紅色
         charCounter.style.borderColor = 'rgba(248, 113, 113, 0.4)';
         warningBanner.style.display = 'block';
@@ -707,9 +707,9 @@
         return;
       }
 
-      // 如果超過 17000 字，跳出提示警告確認
-      if (transcript.length > 17000) {
-        const proceed = confirm('⚠️ 您的字數已超過 17,000 字限制，這可能會超出 API 單次處理上限或導致內容被截斷。是否仍要繼續發送？');
+      // 如果超過 20000 字，跳出提示警告確認
+      if (transcript.length > 20000) {
+        const proceed = confirm('⚠️ 您的字數已超過 20,000 字限制，這可能會超出 API 單次處理上限或導致內容被截斷。是否仍要繼續發送？');
         if (!proceed) return;
       }
 
