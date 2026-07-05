@@ -13,6 +13,9 @@
   <!-- Marked.js for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   
+  <!-- html2pdf.js for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <style>
     :root {
       --bg-color: #09090b;
@@ -280,6 +283,8 @@
       border-bottom: 1px solid var(--card-border);
       padding-bottom: 1rem;
       margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
     .output-title {
@@ -291,11 +296,17 @@
       color: #a855f7;
     }
 
-    .btn-copy {
+    .action-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--card-border);
       color: var(--text-main);
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 10px;
       font-size: 0.85rem;
       font-weight: 600;
@@ -303,12 +314,17 @@
       transition: all 0.25s ease;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
 
-    .btn-copy:hover {
+    .btn-action:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-action:active {
+      transform: translateY(0);
     }
 
     .markdown-content {
@@ -367,6 +383,17 @@
       .language-selector {
         grid-template-columns: repeat(2, 1fr);
       }
+      .output-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .action-group {
+        width: 100%;
+      }
+      .btn-action {
+        flex-grow: 1;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -420,9 +447,20 @@
         <div class="output-title">
           <span>🧠</span> AI 摘要結果
         </div>
-        <button id="btn-copy" class="btn-copy">
-          <span id="copy-icon">📋</span> <span id="copy-text">複製 Markdown</span>
-        </button>
+        <div class="action-group">
+          <button id="btn-copy" class="btn-action">
+            <span id="copy-icon">📋</span> <span id="copy-text">複製</span>
+          </button>
+          <button id="btn-dl-md" class="btn-action" style="border-color: rgba(99, 102, 241, 0.4); color: #c084fc;">
+            <span>📄</span> <span>Markdown</span>
+          </button>
+          <button id="btn-dl-word" class="btn-action" style="border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
+            <span>📘</span> <span>Word</span>
+          </button>
+          <button id="btn-dl-pdf" class="btn-action" style="border-color: rgba(239, 68, 68, 0.4); color: #f87171;">
+            <span>📕</span> <span>PDF</span>
+          </button>
+        </div>
       </div>
       <div id="markdown-result" class="markdown-content"></div>
     </div>
@@ -517,13 +555,100 @@
         copyIcon.textContent = '✅';
         
         setTimeout(() => {
-          copyText.textContent = '複製 Markdown';
+          copyText.textContent = '複製';
           copyIcon.textContent = '📋';
         }, 2000);
       }).catch(err => {
         console.error('複製失敗: ', err);
         alert('無法複製到剪貼簿');
       });
+    });
+
+    // 下載為 Markdown 檔案
+    document.getElementById('btn-dl-md').addEventListener('click', () => {
+      if (!rawSummaryMarkdown) return;
+      const blob = new Blob([rawSummaryMarkdown], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `會議記錄_${new Date().toISOString().slice(0, 10)}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // 下載為 Word 檔案 (.doc)
+    document.getElementById('btn-dl-word').addEventListener('click', () => {
+      if (!rawSummaryMarkdown) return;
+      const htmlContent = document.getElementById('markdown-result').innerHTML;
+      const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' " +
+                     "xmlns:w='urn:schemas-microsoft-com:office:word' " +
+                     "xmlns='http://www.w3.org/TR/REC-html40'>" +
+                     "<head><meta charset='utf-8'><title>Export Meeting Summary</title>" +
+                     "<style>" +
+                     "body { font-family: 'Microsoft JhengHei', sans-serif; line-height: 1.6; padding: 20px; }" +
+                     "h2 { color: #2563eb; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 20px; font-size: 16pt; }" +
+                     "p, li { font-size: 11pt; color: #333333; }" +
+                     "ul, ol { padding-left: 20px; }" +
+                     "li { margin-bottom: 5px; }" +
+                     "</style></head><body>";
+      const footer = "</body></html>";
+      const sourceHTML = header + htmlContent + footer;
+      
+      // 使用 \ufeff 加入 BOM 防止 MS Word 開啟時中文亂碼
+      const blob = new Blob(['\ufeff' + sourceHTML], { type: 'application/msword;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `會議記錄_${new Date().toISOString().slice(0, 10)}.doc`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // 下載為 PDF 檔案
+    document.getElementById('btn-dl-pdf').addEventListener('click', () => {
+      if (!rawSummaryMarkdown) return;
+      
+      // 複製節點以建立一個列印友善（白底黑字）的 PDF 內容
+      const element = document.getElementById('markdown-result');
+      const optElement = element.cloneNode(true);
+      
+      // 設定列印用樣式
+      optElement.style.color = '#111827';
+      optElement.style.backgroundColor = '#ffffff';
+      optElement.style.padding = '30px';
+      optElement.style.fontFamily = "'Microsoft JhengHei', 'Helvetica Neue', Arial, sans-serif";
+      
+      // 修改 PDF 內的元素顏色，使其有良好的閱讀對比
+      optElement.querySelectorAll('h2').forEach(h2 => {
+        h2.style.color = '#1d4ed8'; // 藍色主題標題
+        h2.style.borderLeft = '5px solid #2563eb';
+        h2.style.paddingLeft = '10px';
+        h2.style.marginTop = '25px';
+        h2.style.marginBottom = '10px';
+      });
+      optElement.querySelectorAll('p, li').forEach(el => {
+        el.style.color = '#374151';
+        el.style.fontSize = '12px';
+      });
+      optElement.querySelectorAll('ul, ol').forEach(el => {
+        el.style.paddingLeft = '20px';
+      });
+      optElement.querySelectorAll('li').forEach(el => {
+        el.style.marginBottom = '5px';
+      });
+
+      const opt = {
+        margin:       15,
+        filename:     `會議記錄_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // 呼叫 html2pdf 進行列印並下載
+      html2pdf().from(optElement).set(opt).save();
     });
   </script>
 </body>
